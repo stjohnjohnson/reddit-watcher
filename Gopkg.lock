@@ -9,9 +9,21 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/matryer/persist"
+  packages = ["."]
+  revision = "2b80fc99649a610729e3d517a6a4377f2e7350bb"
+
+[[projects]]
+  branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
   revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+
+[[projects]]
+  name = "github.com/technoweenie/multipartstreamer"
+  packages = ["."]
+  revision = "a90a01d73ae432e2611d178c18367fbaa13e0154"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
@@ -64,9 +76,15 @@
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
 
+[[projects]]
+  name = "gopkg.in/telegram-bot-api.v4"
+  packages = ["."]
+  revision = "0e0af0c480ea98e982d5f4d45fb39577c6ab1e3e"
+  version = "v4.6.2"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "38a6a62d206c389a2d7977318a59a62b1e9141a15c5aab1968f7e8a23dcdeedb"
+  inputs-digest = "74779994a3f52b566d74eef3567c61bfedb0336b4397aa5bf63bae2a906aec4f"
   solver-name = "gps-cdcl"
   solver-version = 1

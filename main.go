@@ -1,11 +1,16 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
+	"regexp"
+	"strings"
 
-	"github.com/stjohnjohnson/reddit-watch/receiver"
+	"github.com/stjohnjohnson/reddit-watch/chatter"
+	"github.com/stjohnjohnson/reddit-watch/data"
+	"github.com/stjohnjohnson/reddit-watch/matcher"
 	"github.com/stjohnjohnson/reddit-watch/scanner"
-	"github.com/turnage/graw/reddit"
 )
 
 // These variables get set by the build script via the LDFLAGS
@@ -15,12 +20,116 @@ var (
 	date    = "unknown"
 )
 
+type BotHandler struct {
+	userData *data.UserData
+	posts    scanner.ScannerChannel
+	scan     *scanner.ScannerHandler
+	messages chatter.ChatterChannel
+	chat     *chatter.ChatterHandler
+}
+
+// /COMMAND OPTIONALDATA
+var cmdRex = regexp.MustCompile(`(?i)^/(\w+)(?:\s(.+))?$`)
+
+func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
+	fields := cmdRex.FindStringSubmatch(message)
+
+	switch {
+	case len(fields) > 2 && fields[1] == "watch":
+		keyword := fields[2]
+
+		err := b.userData.Add(userID, keyword)
+		if err != nil {
+			log.Println("Unable to save user data: ", err)
+		}
+
+		return fmt.Sprintf("Okay, I'm going to watch for keywords matching %v", keyword)
+	case len(fields) > 1 && fields[1] == "status":
+		crit := b.userData.Get(userID)
+
+		resp := []string{}
+		for keyword, hits := range crit {
+			resp = append(resp, fmt.Sprintf(" - %v (%d hits)", keyword, hits))
+		}
+
+		return fmt.Sprintf("These are your current watch items:\n%v", strings.Join(resp, "\n"))
+	default:
+		return "I'm sorry. Doesn't look like anything to me."
+	}
+}
+
+func (b *BotHandler) Loop() {
+	for {
+		select {
+		case post := <-b.posts:
+			forSale, err := matcher.GetSale(post.Title)
+
+			if err != nil {
+				log.Printf("SKIP %s", err)
+				continue
+			}
+			log.Printf("ACK %s", forSale)
+
+			keywords := matcher.FindMatching(b.userData.GetKeywords(), forSale, post.SelfText)
+			for _, keyword := range keywords {
+				ids := b.userData.GetByKeyword(keyword)
+				for _, id := range ids {
+					log.Printf("MATCH %s (@%d)", keyword, id)
+					b.chat.SendMessage(id, fmt.Sprintf("https://reddit.com%s (matching %s)", post.Permalink, keyword))
+					b.userData.Increment(id, keyword)
+				}
+			}
+
+		case update := <-b.messages:
+			if update.Message == nil {
+				continue
+			}
+			log.Printf("MSG [%s] %s", update.Message.From.UserName, update.Message.Text)
+			resp := b.parseIncomingMessage(update.Message.Chat.ID, update.Message.Text)
+			b.chat.SendMessage(update.Message.Chat.ID, resp)
+		}
+	}
+}
+
 func main() {
 	log.Printf("Version %v, commit %v, built at %v", version, commit, date)
 
-	posts := make(chan *reddit.Post)
+	token := flag.String("token", "INVALID", "Bot Token for Telegram")
+	configPath := flag.String("config", "/config/reddit-watch.json", "Location of user data")
+	flag.Parse()
 
-	go scanner.Start(version, posts)
-	receiver.Start(posts)
+	userData, err := data.Load(*configPath)
+	if err != nil {
+		log.Printf("Unable to load config: %v", err)
+	}
 
+	scan, err := scanner.New(version)
+	if err != nil {
+		log.Fatalf("Failed to setup scanner: %v", err)
+	}
+
+	posts, err := scan.Start()
+	if err != nil {
+		log.Fatalf("Failed to start scanner: %v", err)
+	}
+
+	chat, err := chatter.New(version, *token)
+	if err != nil {
+		log.Fatalf("Failed to setup chatter: %v", err)
+	}
+
+	messages, err := chat.Start()
+	if err != nil {
+		log.Fatalf("Failed to start chatter: %v", err)
+	}
+
+	bot := &BotHandler{
+		userData: userData,
+		posts:    posts,
+		scan:     scan,
+		messages: messages,
+		chat:     chat,
+	}
+
+	bot.Loop()
 }

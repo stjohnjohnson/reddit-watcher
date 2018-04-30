@@ -32,3 +32,11 @@
 [[constraint]]
   branch = "master"
   name = "github.com/turnage/graw"
+
+[[constraint]]
+  name = "gopkg.in/telegram-bot-api.v4"
+  version = "4.6.2"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/matryer/persist"

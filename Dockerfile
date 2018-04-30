@@ -34,5 +34,8 @@ RUN apk add --update ca-certificates && rm -rf /var/cache/apk/*
 # Copy binary from build step
 COPY --from=build /reddit-watch /usr/bin/
 
+# Persist data in this directory
+VOLUME /config
+
 # Specify our launch point
 ENTRYPOINT ["/usr/bin/reddit-watch"]
