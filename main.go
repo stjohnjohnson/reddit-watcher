@@ -40,10 +40,19 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 
 		err := b.userData.Add(userID, keyword)
 		if err != nil {
-			log.Println("Unable to save user data: ", err)
+			log.Println("Unable to add keyword: ", err)
 		}
 
 		return fmt.Sprintf("Okay, I'm going to watch for keywords matching %v", keyword)
+	case len(fields) > 2 && fields[1] == "stop":
+		keyword := fields[2]
+
+		err := b.userData.Remove(userID, keyword)
+		if err != nil {
+			log.Println("Unable to remove keyword: ", err)
+		}
+
+		return fmt.Sprintf("I'm no longer going to watch for keywords matching %v", keyword)
 	case len(fields) > 1 && fields[1] == "status":
 		crit := b.userData.Get(userID)
 
@@ -53,6 +62,15 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 		}
 
 		return fmt.Sprintf("These are your current watch items:\n%v", strings.Join(resp, "\n"))
+	case len(fields) > 1 && fields[1] == "stats":
+		stats := b.userData.GetStats()
+
+		resp := []string{}
+		for stat, hits := range stats {
+			resp = append(resp, fmt.Sprintf(" - %v (%d hits)", stat, hits))
+		}
+
+		return fmt.Sprintf("System Stats:\n%v", strings.Join(resp, "\n"))
 	default:
 		return "I'm sorry. Doesn't look like anything to me."
 	}
@@ -62,7 +80,10 @@ func (b *BotHandler) Loop() {
 	for {
 		select {
 		case post := <-b.posts:
-			forSale, err := matcher.GetSale(post.Title)
+			forSale, mode, err := matcher.GetSale(post.Title)
+
+			// Record stats
+			b.userData.IncrementStat(mode)
 
 			if err != nil {
 				log.Printf("SKIP %s", err)
@@ -95,7 +116,7 @@ func main() {
 	log.Printf("Version %v, commit %v, built at %v", version, commit, date)
 
 	token := flag.String("token", "INVALID", "Bot Token for Telegram")
-	configPath := flag.String("config", "/config/reddit-watch.json", "Location of user data")
+	configPath := flag.String("config", "/config", "Location of user data")
 	flag.Parse()
 
 	userData, err := data.Load(*configPath)

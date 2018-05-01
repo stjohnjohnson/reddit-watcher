@@ -7,29 +7,38 @@ import (
 	"strings"
 )
 
-var titleRex = regexp.MustCompile(`(?i)^\[(\w+)-(\w+)\]\s*\[H\]\s*(.*)\s*\[W\]\s*(.*)$`)
+// [TYPE] Something
+var nonSalesRex = regexp.MustCompile(`(?i)^\[(vendor|artisan|gb)\]\s*(.*)$`)
+
+// [COUNTRY-STATE] [H] Something [W] Something else
+var salesRex = regexp.MustCompile(`(?i)^\[(\w+)(?:-\w+)?\]\s*\[H\]\s*(.*)\s*\[W\]\s*(.*)$`)
+
 var moneyRex = regexp.MustCompile(`(?i)(paypal|cash)`)
 
-func GetSale(title string) (string, error) {
-	fields := titleRex.FindStringSubmatch(title)
-
-	if fields == nil {
-		return "", errors.New(fmt.Sprintf("Not parsable: %s", title))
+func GetSale(title string) (string, string, error) {
+	nonSales := nonSalesRex.FindStringSubmatch(title)
+	if nonSales != nil {
+		return "", strings.ToLower(nonSales[1]), errors.New(fmt.Sprintf("Not a trade: %s, %s", nonSales[1], nonSales[2]))
 	}
-	cntry, state, have, want := fields[1], fields[2], fields[3], fields[4]
+
+	sales := salesRex.FindStringSubmatch(title)
+	if sales == nil {
+		return "", "bad", errors.New(fmt.Sprintf("Not parsable: %s", title))
+	}
+	cntry, have, want := sales[1], sales[2], sales[3]
 
 	// Check location
 	if cntry != "US" {
-		return "", errors.New(fmt.Sprintf("Not in the US: %s, %s", cntry, state))
+		return "", "international", errors.New(fmt.Sprintf("Not in the US: %s", cntry))
 	}
 
 	// Ensure it's for sale
 	if !moneyRex.MatchString(want) {
-		return "", errors.New(fmt.Sprintf("Not for sale: %s", want))
+		return "", "buying", errors.New(fmt.Sprintf("Not for sale: %s", want))
 	}
 
 	// Return the things for sale
-	return strings.TrimSpace(have), nil
+	return strings.TrimSpace(have), "selling", nil
 }
 
 func FindMatching(keywords []string, forsale, desc string) []string {
