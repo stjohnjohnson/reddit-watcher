@@ -8,7 +8,7 @@ import (
 )
 
 // [TYPE] Something
-var nonSalesRex = regexp.MustCompile(`(?i)^\[(vendor|artisan|gb)\]\s*(.*)$`)
+var nonSalesRex = regexp.MustCompile(`(?i)^\[(vendor|artisan|gb|ic)\]\s*(.*)$`)
 
 // [COUNTRY-STATE] [H] Something [W] Something else
 var salesRex = regexp.MustCompile(`(?i)^\[(\w+)(?:-\w+)?\]\s*\[H\]\s*(.*)\s*\[W\]\s*(.*)$`)

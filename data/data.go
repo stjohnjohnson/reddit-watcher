@@ -17,8 +17,17 @@ type UserData struct {
 	stats    map[string]int64
 }
 
-func (ud *UserData) GetStats() map[string]int64 {
-	return ud.stats
+func (ud *UserData) GetStats() map[string]string {
+	stats := make(map[string]string)
+
+	stats["subscribers"] = fmt.Sprintf("%d channels", len(ud.userMap))
+	stats["watchlist"] = fmt.Sprintf("%d items", len(ud.keyMap))
+
+	for keyword, hits := range ud.stats {
+		stats[keyword] = fmt.Sprintf("%d hits", hits)
+	}
+
+	return stats
 }
 
 func (ud *UserData) IncrementStat(flag string) error {

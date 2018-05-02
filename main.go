@@ -33,6 +33,9 @@ var cmdRex = regexp.MustCompile(`(?i)^/(\w+)(?:\s(.+))?$`)
 
 func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 	fields := cmdRex.FindStringSubmatch(message)
+	if fields == nil {
+		return ""
+	}
 
 	switch {
 	case len(fields) > 2 && fields[1] == "watch":
@@ -53,7 +56,7 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 		}
 
 		return fmt.Sprintf("I'm no longer going to watch for keywords matching %v", keyword)
-	case len(fields) > 1 && fields[1] == "status":
+	case len(fields) > 1 && fields[1] == "items":
 		crit := b.userData.Get(userID)
 
 		resp := []string{}
@@ -61,18 +64,40 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 			resp = append(resp, fmt.Sprintf(" - %v (%d hits)", keyword, hits))
 		}
 
-		return fmt.Sprintf("These are your current watch items:\n%v", strings.Join(resp, "\n"))
-	case len(fields) > 1 && fields[1] == "stats":
-		stats := b.userData.GetStats()
-
-		resp := []string{}
-		for stat, hits := range stats {
-			resp = append(resp, fmt.Sprintf(" - %v (%d hits)", stat, hits))
+		if len(resp) > 0 {
+			return fmt.Sprintf("These are your current watch items:\n%v", strings.Join(resp, "\n"))
+		} else {
+			return "There are no items on your watch list"
 		}
 
-		return fmt.Sprintf("System Stats:\n%v", strings.Join(resp, "\n"))
+	case len(fields) > 1 && fields[1] == "status":
+		stats := b.userData.GetStats()
+
+		resp := []string{
+			fmt.Sprintf("reddit-watcher@%v, commit %v, built at %v", version, commit, date),
+			"https://github.com/stjohnjohnson/reddit-watcher",
+		}
+
+		for stat, val := range stats {
+			resp = append(resp, fmt.Sprintf(" - %v (%v)", stat, val))
+		}
+
+		return strings.Join(resp, "\n")
+
+	case len(fields) > 1 && fields[1] == "help":
+		resp := []string{
+			"How to use reddit notifier bot:",
+			" /help - gets this help message",
+			" /watch <keyword> - will notify this channel if any listings match that keyword",
+			" /stop <keyword> - will notify this channel if any listings match that keyword",
+			" /status - returns information about the bot",
+			" /items - returns list of watched items",
+		}
+
+		return strings.Join(resp, "\n")
+
 	default:
-		return "I'm sorry. Doesn't look like anything to me."
+		return "That command doesn't look like anything to me."
 	}
 }
 
@@ -105,9 +130,12 @@ func (b *BotHandler) Loop() {
 			if update.Message == nil {
 				continue
 			}
-			log.Printf("MSG [%s] %s", update.Message.From.UserName, update.Message.Text)
 			resp := b.parseIncomingMessage(update.Message.Chat.ID, update.Message.Text)
-			b.chat.SendMessage(update.Message.Chat.ID, resp)
+
+			if resp != "" {
+				log.Printf("MSG [%s] %s", update.Message.From.UserName, update.Message.Text)
+				b.chat.SendMessage(update.Message.Chat.ID, resp)
+			}
 		}
 	}
 }
