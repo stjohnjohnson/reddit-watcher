@@ -38,7 +38,7 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 	}
 
 	switch {
-	case len(fields) > 2 && fields[1] == "watch":
+	case len(fields) > 2 && fields[1] == "buying":
 		keyword := fields[2]
 
 		err := b.userData.Add(userID, keyword)
@@ -70,12 +70,11 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 			return "There are no items on your watch list"
 		}
 
-	case len(fields) > 1 && fields[1] == "status":
+	case len(fields) > 1 && fields[1] == "stats":
 		stats := b.userData.GetStats()
 
 		resp := []string{
-			fmt.Sprintf("reddit-watcher@%v, commit %v, built at %v", version, commit, date),
-			"https://github.com/stjohnjohnson/reddit-watcher",
+			"Interesting Statistics:",
 		}
 
 		for stat, val := range stats {
@@ -86,12 +85,14 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 
 	case len(fields) > 1 && fields[1] == "help":
 		resp := []string{
-			"How to use reddit notifier bot:",
-			" /help - gets this help message",
-			" /watch <keyword> - will notify this channel if any listings match that keyword",
+			fmt.Sprintf("reddit-watcher@%v, commit %v, built at %v", version, commit, date),
+			"https://git.io/vprdx",
+			"How to use this bot:",
+			" /buying <keyword> - will notify this channel if any listings match that keyword",
 			" /stop <keyword> - will notify this channel if any listings match that keyword",
-			" /status - returns information about the bot",
 			" /items - returns list of watched items",
+			" /stats - returns information about the bot",
+			" /help - gets this help message",
 		}
 
 		return strings.Join(resp, "\n")
