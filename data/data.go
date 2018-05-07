@@ -8,8 +8,11 @@ import (
 	"github.com/matryer/persist"
 )
 
+// Keywords keeps track of the criteria and number of hits
 type Keywords map[string]int
-type UserData struct {
+
+// AppData represents all information stored by the application
+type AppData struct {
 	keyMap   map[string][]int64
 	userMap  map[int64]Keywords
 	keywords []string
@@ -17,7 +20,12 @@ type UserData struct {
 	stats    map[string]int64
 }
 
-func (ud *UserData) GetStats() map[string]string {
+// GetStats provides a map of stat name and value
+// It captures:
+//  - # of channels/users asking for reply
+//  - # of keywords it is looking for
+//  - # of matches per stat (see below)
+func (ud *AppData) GetStats() map[string]string {
 	stats := make(map[string]string)
 
 	stats["subscribers"] = fmt.Sprintf("%d channels", len(ud.userMap))
@@ -30,7 +38,8 @@ func (ud *UserData) GetStats() map[string]string {
 	return stats
 }
 
-func (ud *UserData) IncrementStat(flag string) error {
+// IncrementStat keeps track of the number of occurrences per flag
+func (ud *AppData) IncrementStat(flag string) error {
 	_, ok := ud.stats[flag]
 	if !ok {
 		ud.stats[flag] = 0
@@ -46,7 +55,8 @@ func (ud *UserData) IncrementStat(flag string) error {
 	return nil
 }
 
-func (ud *UserData) Get(id int64) Keywords {
+// Get returns the map of Keywords per user ID
+func (ud *AppData) Get(id int64) Keywords {
 	_, ok := ud.userMap[id]
 	if !ok {
 		ud.userMap[id] = make(Keywords)
@@ -55,7 +65,8 @@ func (ud *UserData) Get(id int64) Keywords {
 	return ud.userMap[id]
 }
 
-func (ud *UserData) GetByKeyword(keyword string) []int64 {
+// GetByKeyword returns a list of user IDs for a given keyword
+func (ud *AppData) GetByKeyword(keyword string) []int64 {
 	ids, ok := ud.keyMap[strings.ToLower(keyword)]
 	if !ok {
 		ids = []int64{}
@@ -64,11 +75,13 @@ func (ud *UserData) GetByKeyword(keyword string) []int64 {
 	return ids
 }
 
-func (ud *UserData) GetKeywords() []string {
+// GetKeywords returns the list of all keywords being searched for
+func (ud *AppData) GetKeywords() []string {
 	return ud.keywords
 }
 
-func (ud *UserData) Sync() {
+// Sync updates the temporary variables keyMap and keywords
+func (ud *AppData) Sync() {
 	keyMap := make(map[string][]int64)
 	for id, keys := range ud.userMap {
 		for key, _ := range keys {
@@ -86,27 +99,31 @@ func (ud *UserData) Sync() {
 	ud.keywords = keywords
 }
 
-func (ud *UserData) Add(id int64, keyword string) error {
+// Add watches a keyword for a given user ID
+func (ud *AppData) Add(id int64, keyword string) error {
 	ud.Get(id)[strings.ToLower(keyword)] = 0
 	ud.Sync()
 
 	return ud.Save()
 }
 
-func (ud *UserData) Remove(id int64, keyword string) error {
+// Remove no longer watches a keyword for a given user ID
+func (ud *AppData) Remove(id int64, keyword string) error {
 	delete(ud.Get(id), strings.ToLower(keyword))
 	ud.Sync()
 
 	return ud.Save()
 }
 
-func (ud *UserData) Increment(id int64, keyword string) error {
+// Increment bumps the hit counter on a given keyword and user ID
+func (ud *AppData) Increment(id int64, keyword string) error {
 	ud.Get(id)[strings.ToLower(keyword)] += 1
 
 	return ud.Save()
 }
 
-func (ud *UserData) Save() error {
+// Save persists the user data and stats to disk
+func (ud *AppData) Save() error {
 	err := persist.Save(fmt.Sprintf("%s/user-map.json", ud.path), ud.userMap)
 	if err != nil {
 		return errors.New(fmt.Sprintf("Save UserMap failed: %v", err))
@@ -120,7 +137,8 @@ func (ud *UserData) Save() error {
 	return nil
 }
 
-func Load(path string) (*UserData, error) {
+// Load recovers the user data and stats from disk
+func Load(path string) (*AppData, error) {
 	var userMap map[int64]Keywords
 	var stats map[string]int64
 
@@ -134,12 +152,12 @@ func Load(path string) (*UserData, error) {
 		stats = make(map[string]int64)
 	}
 
-	userData := &UserData{
+	appData := &AppData{
 		userMap: userMap,
 		stats:   stats,
 		path:    path,
 	}
-	userData.Sync()
+	appData.Sync()
 
-	return userData, err
+	return appData, err
 }

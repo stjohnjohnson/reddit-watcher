@@ -21,7 +21,7 @@ var (
 )
 
 type BotHandler struct {
-	userData *data.UserData
+	appData  *data.AppData
 	posts    scanner.ScannerChannel
 	scan     *scanner.ScannerHandler
 	messages chatter.ChatterChannel
@@ -41,7 +41,7 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 	case len(fields) > 2 && fields[1] == "buying":
 		keyword := fields[2]
 
-		err := b.userData.Add(userID, keyword)
+		err := b.appData.Add(userID, keyword)
 		if err != nil {
 			log.Println("Unable to add keyword: ", err)
 		}
@@ -50,14 +50,14 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 	case len(fields) > 2 && fields[1] == "stop":
 		keyword := fields[2]
 
-		err := b.userData.Remove(userID, keyword)
+		err := b.appData.Remove(userID, keyword)
 		if err != nil {
 			log.Println("Unable to remove keyword: ", err)
 		}
 
 		return fmt.Sprintf("I'm no longer going to watch for keywords matching %v", keyword)
 	case len(fields) > 1 && fields[1] == "items":
-		crit := b.userData.Get(userID)
+		crit := b.appData.Get(userID)
 
 		resp := []string{}
 		for keyword, hits := range crit {
@@ -71,7 +71,7 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 		}
 
 	case len(fields) > 1 && fields[1] == "stats":
-		stats := b.userData.GetStats()
+		stats := b.appData.GetStats()
 
 		resp := []string{
 			"Interesting Statistics:",
@@ -109,7 +109,7 @@ func (b *BotHandler) Loop() {
 			forSale, mode, err := matcher.GetSale(post.Title)
 
 			// Record stats
-			b.userData.IncrementStat(mode)
+			b.appData.IncrementStat(mode)
 
 			if err != nil {
 				log.Printf("SKIP %s", err)
@@ -117,13 +117,13 @@ func (b *BotHandler) Loop() {
 			}
 			log.Printf("ACK %s", forSale)
 
-			keywords := matcher.FindMatching(b.userData.GetKeywords(), forSale, post.SelfText)
+			keywords := matcher.FindMatching(b.appData.GetKeywords(), forSale, post.SelfText)
 			for _, keyword := range keywords {
-				ids := b.userData.GetByKeyword(keyword)
+				ids := b.appData.GetByKeyword(keyword)
 				for _, id := range ids {
 					log.Printf("MATCH %s (@%d)", keyword, id)
 					b.chat.SendMessage(id, fmt.Sprintf("https://reddit.com%s (matching %s)", post.Permalink, keyword))
-					b.userData.Increment(id, keyword)
+					b.appData.Increment(id, keyword)
 				}
 			}
 
@@ -148,7 +148,7 @@ func main() {
 	configPath := flag.String("config", "/config", "Location of user data")
 	flag.Parse()
 
-	userData, err := data.Load(*configPath)
+	appData, err := data.Load(*configPath)
 	if err != nil {
 		log.Printf("Unable to load config: %v", err)
 	}
@@ -174,7 +174,7 @@ func main() {
 	}
 
 	bot := &BotHandler{
-		userData: userData,
+		appData:  appData,
 		posts:    posts,
 		scan:     scan,
 		messages: messages,
