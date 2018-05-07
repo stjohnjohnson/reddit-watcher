@@ -11,6 +11,7 @@ import (
 	"github.com/stjohnjohnson/reddit-watch/data"
 	"github.com/stjohnjohnson/reddit-watch/matcher"
 	"github.com/stjohnjohnson/reddit-watch/scanner"
+	"github.com/stjohnjohnson/reddit-watch/stats"
 )
 
 // These variables get set by the build script via the LDFLAGS
@@ -21,7 +22,8 @@ var (
 )
 
 type BotHandler struct {
-	appData  *data.AppData
+	data     *data.AppData
+	stats    *stats.Handler
 	posts    scanner.ScannerChannel
 	scan     *scanner.ScannerHandler
 	messages chatter.ChatterChannel
@@ -41,7 +43,7 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 	case len(fields) > 2 && fields[1] == "buying":
 		keyword := fields[2]
 
-		err := b.appData.Add(userID, keyword)
+		err := b.data.Add(userID, keyword)
 		if err != nil {
 			log.Println("Unable to add keyword: ", err)
 		}
@@ -50,14 +52,14 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 	case len(fields) > 2 && fields[1] == "stop":
 		keyword := fields[2]
 
-		err := b.appData.Remove(userID, keyword)
+		err := b.data.Remove(userID, keyword)
 		if err != nil {
 			log.Println("Unable to remove keyword: ", err)
 		}
 
 		return fmt.Sprintf("I'm no longer going to watch for keywords matching %v", keyword)
 	case len(fields) > 1 && fields[1] == "items":
-		crit := b.appData.Get(userID)
+		crit := b.data.Get(userID)
 
 		resp := []string{}
 		for keyword, hits := range crit {
@@ -71,13 +73,15 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 		}
 
 	case len(fields) > 1 && fields[1] == "stats":
-		stats := b.appData.GetStats()
-
 		resp := []string{
 			"Interesting Statistics:",
 		}
 
-		for stat, val := range stats {
+		for stat, val := range b.stats.GetAll() {
+			resp = append(resp, fmt.Sprintf(" - %v (%v)", stat, val))
+		}
+
+		for stat, val := range b.data.Hits() {
 			resp = append(resp, fmt.Sprintf(" - %v (%v)", stat, val))
 		}
 
@@ -109,7 +113,7 @@ func (b *BotHandler) Loop() {
 			forSale, mode, err := matcher.GetSale(post.Title)
 
 			// Record stats
-			b.appData.IncrementStat(mode)
+			b.stats.Increment(mode)
 
 			if err != nil {
 				log.Printf("SKIP %s", err)
@@ -117,13 +121,13 @@ func (b *BotHandler) Loop() {
 			}
 			log.Printf("ACK %s", forSale)
 
-			keywords := matcher.FindMatching(b.appData.GetKeywords(), forSale, post.SelfText)
+			keywords := matcher.FindMatching(b.data.GetKeywords(), forSale, post.SelfText)
 			for _, keyword := range keywords {
-				ids := b.appData.GetByKeyword(keyword)
+				ids := b.data.GetByKeyword(keyword)
 				for _, id := range ids {
 					log.Printf("MATCH %s (@%d)", keyword, id)
 					b.chat.SendMessage(id, fmt.Sprintf("https://reddit.com%s (matching %s)", post.Permalink, keyword))
-					b.appData.Increment(id, keyword)
+					b.data.Increment(id, keyword)
 				}
 			}
 
@@ -153,6 +157,11 @@ func main() {
 		log.Printf("Unable to load config: %v", err)
 	}
 
+	statData, err := stats.Load(*configPath)
+	if err != nil {
+		log.Printf("Unable to load stats: %v", err)
+	}
+
 	scan, err := scanner.New(version)
 	if err != nil {
 		log.Fatalf("Failed to setup scanner: %v", err)
@@ -174,7 +183,8 @@ func main() {
 	}
 
 	bot := &BotHandler{
-		appData:  appData,
+		data:     appData,
+		stats:    statData,
 		posts:    posts,
 		scan:     scan,
 		messages: messages,
