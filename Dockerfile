@@ -15,6 +15,9 @@ ENV CGO_ENABLED=0
 COPY . /go/src/github.com/stjohnjohnson/reddit-watch
 RUN dep ensure -vendor-only
 
+# Test the code
+RUN go test ./... -coverprofile coverage.out
+
 # Build the app
 RUN go build \
     -o /reddit-watch \
