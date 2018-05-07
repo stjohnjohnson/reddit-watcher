@@ -42,6 +42,11 @@ func TestGetSale(t *testing.T) {
 			"Not a trade: Vendor, GMK Olivia GB MOQ Hit! - Last day! | NovelKeys Restocks | BOX Royals Update",
 		},
 		{
+			"[Giveaway] KF Orochi - Painted by KeypressGraphics",
+			"giveaway",
+			"Not a trade: Giveaway, KF Orochi - Painted by KeypressGraphics",
+		},
+		{
 			"May Confirmed Trade Thread",
 			"bad",
 			"Not parsable: May Confirmed Trade Thread",
