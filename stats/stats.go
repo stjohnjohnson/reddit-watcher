@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -38,9 +37,9 @@ func (ud *Handler) Increment(flag string) error {
 
 	ud.data[flag]++
 
-	err := persist.Save(ud.path, ud)
+	err := ud.Save()
 	if err != nil {
-		return errors.New(fmt.Sprintf("Save failed: %v", err))
+		return fmt.Errorf("Save failed: %v", err)
 	}
 
 	return nil
@@ -50,7 +49,7 @@ func (ud *Handler) Increment(flag string) error {
 func (ud *Handler) Save() error {
 	err := persist.Save(fmt.Sprintf("%s/stats.json", ud.path), ud.data)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Save Stats failed: %v", err))
+		return fmt.Errorf("Save Stats failed: %v", err)
 	}
 
 	return nil

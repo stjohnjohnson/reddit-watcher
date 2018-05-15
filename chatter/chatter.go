@@ -1,49 +1,53 @@
 package chatter
 
 import (
-	"errors"
 	"fmt"
 	"log"
 
 	"gopkg.in/telegram-bot-api.v4"
 )
 
-type ChatterHandler struct {
+// Handler is a telegram bot
+type Handler struct {
 	bot *tgbotapi.BotAPI
 }
 
-type ChatterChannel tgbotapi.UpdatesChannel
+// Channel is a message channel
+type Channel tgbotapi.UpdatesChannel
 
-func (r *ChatterHandler) Start() (ChatterChannel, error) {
+// Start begins listening to messages from Telegram
+func (r *Handler) Start() (Channel, error) {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	c, err := r.bot.GetUpdatesChan(u)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to start: %v", err))
+		return nil, fmt.Errorf("Unable to start: %v", err)
 	}
 
-	return ChatterChannel(c), nil
+	return Channel(c), nil
 }
 
-func (r *ChatterHandler) SendMessage(chatID int64, message string) error {
+// SendMessage will send a message to a given user
+func (r *Handler) SendMessage(chatID int64, message string) error {
 	_, err := r.bot.Send(tgbotapi.NewMessage(chatID, message))
 
 	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to send: %v", err))
+		return fmt.Errorf("Unable to send: %v", err)
 	}
 	return nil
 }
 
-func New(version, token string) (*ChatterHandler, error) {
+// New creates a new Telegram bot
+func New(version, token string) (*Handler, error) {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to setup: %v", err))
+		return nil, fmt.Errorf("Unable to setup: %v", err)
 	}
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	return &ChatterHandler{
+	return &Handler{
 		bot: bot,
 	}, nil
 }

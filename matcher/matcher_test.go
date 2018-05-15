@@ -1,74 +1,93 @@
 package matcher
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
 
-func TestGetSale(t *testing.T) {
+func TestParseTitle(t *testing.T) {
 	totalTests := []struct {
-		in   string
-		mode string
-		out  string
+		in  string
+		out *ParsedPost
+		err error
 	}{
 		{
 			"[US-TX] [H] PrimeCap / CM PBT L Cherry MX Blues [W] Paypal, Local Cash",
-			"selling",
-			"PrimeCap / CM PBT L Cherry MX Blues",
+			&ParsedPost{
+				Type:     Selling,
+				Contents: "PrimeCap / CM PBT L Cherry MX Blues",
+				Region:   "US",
+			},
+			nil,
 		},
 		{
 			"[CA-ON] [H] BKE Redux Heavy, FC660C 45g Topre Domes, Leopold Keycaps Doubleshot PBT Dolch [W] PayPal ",
-			"international",
-			"Not in the US: CA",
+			&ParsedPost{
+				Type:     Selling,
+				Contents: "BKE Redux Heavy, FC660C 45g Topre Domes, Leopold Keycaps Doubleshot PBT Dolch",
+				Region:   "CA",
+			},
+			nil,
 		},
 		{
 			"[NO][H]GMK Nautilus, Doomcaps, ETF, Brocaps [W]PayPal, trades",
-			"international",
-			"Not in the US: NO",
+			&ParsedPost{
+				Type:     Selling,
+				Contents: "GMK Nautilus, Doomcaps, ETF, Brocaps",
+				Region:   "NO",
+			},
+			nil,
 		},
 		{
 			"[US-PA][H] PayPal, Local Cash [W] 65g r7+ zealios, zeal stabs r2 or newer",
-			"buying",
-			"Not for sale: 65g r7+ zealios, zeal stabs r2 or newer",
+			&ParsedPost{
+				Type:     Buying,
+				Contents: "65g r7+ zealios, zeal stabs r2 or newer",
+				Region:   "US",
+			},
+			nil,
 		},
 		{
 			"[US-FL] [H] PayPal [W] ~60 alps orange or salmon",
-			"buying",
-			"Not for sale: ~60 alps orange or salmon",
+			&ParsedPost{
+				Type:     Buying,
+				Contents: "~60 alps orange or salmon",
+				Region:   "US",
+			},
+			nil,
 		},
 		{
 			"[Vendor] GMK Olivia GB MOQ Hit! - Last day! | NovelKeys Restocks | BOX Royals Update",
-			"vendor",
-			"Not a trade: Vendor, GMK Olivia GB MOQ Hit! - Last day! | NovelKeys Restocks | BOX Royals Update",
+			&ParsedPost{
+				Type:     Vendor,
+				Contents: "GMK Olivia GB MOQ Hit! - Last day! | NovelKeys Restocks | BOX Royals Update",
+			},
+			nil,
 		},
 		{
 			"[Giveaway] KF Orochi - Painted by KeypressGraphics",
-			"giveaway",
-			"Not a trade: Giveaway, KF Orochi - Painted by KeypressGraphics",
+			&ParsedPost{
+				Type:     Giveaway,
+				Contents: "KF Orochi - Painted by KeypressGraphics",
+			},
+			nil,
 		},
 		{
 			"May Confirmed Trade Thread",
-			"bad",
-			"Not parsable: May Confirmed Trade Thread",
-		},
-		{
-			"[MY][H] Fuguthulus, matrix abels, artisans [W] Trades, Paypal ",
-			"international",
-			"Not in the US: MY",
+			nil,
+			fmt.Errorf("not parsable: May Confirmed Trade Thread"),
 		},
 	}
 
 	for _, tt := range totalTests {
-		out, mode, err := GetSale(tt.in)
+		out, err := ParseTitle(tt.in)
 
-		if err != nil {
-			out = err.Error()
-		}
-		if out != tt.out {
+		if !reflect.DeepEqual(out, tt.out) {
 			t.Errorf("Expected Out %q, got %q", tt.out, out)
 		}
-		if mode != tt.mode {
-			t.Errorf("Expected Mode %q, got %q", tt.mode, mode)
+		if !reflect.DeepEqual(err, tt.err) {
+			t.Errorf("Expected Err %q, got %q", tt.err, err)
 		}
 	}
 }
@@ -92,6 +111,10 @@ func TestFindMatching(t *testing.T) {
 		{
 			[]string{"tao hao", "primecap"},
 			[]string{"tao hao", "primecap"},
+		},
+		{
+			[]string{"*"},
+			[]string{"*"},
 		},
 	}
 

@@ -9,9 +9,11 @@ install:
 	dep ensure -vendor-only
 
 test:
-	# @TODO uncomment after PR #1 is merged
-	# gometalinter.v2 ./... --vendor
+	# Lint checks
+	gometalinter.v2 ./... --vendor --deadline 2m
+	# Tests
 	go test ./... -v -covermode=count -coverprofile=coverage.out
+	# Code coverage
 	@goveralls -coverprofile=coverage.out -service=circle-ci -repotoken ${COVERALLS_TOKEN}
 
 build:
