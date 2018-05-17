@@ -5,8 +5,6 @@ FROM golang:1.10 AS build
 WORKDIR /go/src/github.com/stjohnjohnson/reddit-watcher
 RUN go get -u github.com/golang/dep/cmd/dep
 RUN go get -u github.com/screwdriver-cd/gitversion
-RUN go get -u gopkg.in/alecthomas/gometalinter.v2 \
-    && gometalinter.v2 --install
 
 # Compilation target
 ENV GOOS=linux
@@ -16,11 +14,6 @@ ENV CGO_ENABLED=0
 # Add code and install deps
 COPY . /go/src/github.com/stjohnjohnson/reddit-watcher
 RUN dep ensure -vendor-only
-
-# Static Analysis
-RUN gometalinter.v2 ./... --vendor
-# Test the code
-RUN go test ./... -coverprofile coverage.out
 
 # Build the app
 RUN go build \
