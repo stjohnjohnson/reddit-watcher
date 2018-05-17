@@ -1,5 +1,8 @@
 # Reddit Watcher
 
+[![CircleCI](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master.svg?style=svg)](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master)
+[![Coverage Status](https://coveralls.io/repos/github/stjohnjohnson/reddit-watcher/badge.svg?branch=master)](https://coveralls.io/github/stjohnjohnson/reddit-watcher?branch=master)
+
 Watches specific subreddits for items matching a specific pattern.
 
 ## Usage

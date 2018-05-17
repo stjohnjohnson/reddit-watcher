@@ -1,0 +1,32 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.10
+    working_directory: /go/src/github.com/stjohnjohnson/reddit-watcher
+    steps:
+      - checkout
+      - run: make install
+      - run: make test
+      - setup_remote_docker
+      - run: make build
+  publish:
+    docker:
+      - image: circleci/golang:1.10
+    working_directory: /go/src/github.com/stjohnjohnson/reddit-watcher
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "45:95:9c:4c:a4:63:b4:c1:2b:c7:13:d1:0c:54:ad:ad"
+      - run: make bump
+
+workflows:
+  version: 2
+  pipeline:
+    jobs:
+      - build
+      - publish:
+          filters:
+            branches:
+              only: master
