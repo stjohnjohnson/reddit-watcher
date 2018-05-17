@@ -1,7 +1,6 @@
 package scanner
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
@@ -9,47 +8,50 @@ import (
 	"github.com/turnage/graw/reddit"
 )
 
-type ScannerHandler struct {
+// Handler is a reddit bot
+type Handler struct {
 	script  reddit.Script
 	config  graw.Config
-	channel ScannerChannel
+	channel Channel
 }
 
-type ScannerChannel chan *reddit.Post
+// Channel is a reddit post channel
+type Channel chan *reddit.Post
 
-func (r *ScannerHandler) Post(p *reddit.Post) error {
+// Post receives an update from Reddit and forwards it to the Channel
+func (r *Handler) Post(p *reddit.Post) error {
 	r.channel <- p
 
 	return nil
 }
 
 // Start will start the scanner and return a channel to listen for new posts
-func (r *ScannerHandler) Start() (chan *reddit.Post, error) {
+func (r *Handler) Start() (chan *reddit.Post, error) {
 	_, _, err := graw.Scan(r, r.script, r.config)
 
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to start: %v", err))
+		return nil, fmt.Errorf("Unable to start: %v", err)
 	}
 
 	return r.channel, err
 }
 
 // New creates a new scanner to look for Reddit posts in /r/mechmarket
-func New(version string) (*ScannerHandler, error) {
+func New(version string) (*Handler, error) {
 	script, err := reddit.NewScript(
 		fmt.Sprintf("golang:reddit-watcher:%v (by /u/GalacticGargleBlaster)", version),
-		time.Second*5,
+		time.Second*15,
 	)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Unable to setup: %v", err))
+		return nil, fmt.Errorf("Unable to setup: %v", err)
 	}
 
-	channel := make(ScannerChannel)
+	channel := make(Channel)
 	config := graw.Config{
 		Subreddits: []string{"mechmarket"},
 	}
 
-	return &ScannerHandler{
+	return &Handler{
 		script:  script,
 		config:  config,
 		channel: channel,

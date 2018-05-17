@@ -1,13 +1,10 @@
 # Reddit Watcher
 
-[![CircleCI](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master.svg?style=svg)](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master)
-[![Coverage Status](https://coveralls.io/repos/github/stjohnjohnson/reddit-watcher/badge.svg?branch=master)](https://coveralls.io/github/stjohnjohnson/reddit-watcher?branch=master)
+[![CircleCI](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master.svg?style=svg)](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master) [![Coverage Status](https://coveralls.io/repos/github/stjohnjohnson/reddit-watcher/badge.svg?branch=master)](https://coveralls.io/github/stjohnjohnson/reddit-watcher?branch=master)
 
-Watches specific subreddits for items matching a specific pattern.
+Watches specific subreddits (`/r/mechmarket`) for items matching a specific pattern.
 
-## Usage
-
-### Running the Bot
+## Running the Bot
 
 Running the bot is easy!  You just need a Telegram token that you can get from the [BotFather](https://core.telegram.org/bots#3-how-do-i-create-a-bot).
 
@@ -19,37 +16,56 @@ docker run -v `pwd`/config:/config stjohnjohnson/reddit-watcher:latest --token $
 
 In this example, I'm running the container with settings being saved to a local directory.
 
-### Using the Bot
+## Using the Bot
 
-The bot monitors `/r/mechmarket` for specific patterns.  You can specify what you are looking for by the following commands:
+The bot responds to private or group messages that look like a command (start with a `/`).
+
+### Notification
+
+The most basic usage is to monitor for posts that match your keywords.  The following commands will subscribe (or unsubscribe) you on new posts matching your keywords.  If you leave the keyword empty, it defaults to `*` which is ALL posts.
+
+#### `/selling <keyword>`
+
+Look for items matching that keyword that are being sold.  Sold means the listing includes "cash" or "paypal" in the "want" field.
 
 #### `/buying <keyword>`
 
-This will tell the bot to look for items matching that keyword that are being sold.  Sold means the listing includes "cash" or "paypal" in the "want" field.
+Look for items matching that keyword that are being bought.  Sold means the listing includes "cash" or "paypal" in the "have" field.
+
+#### `/vendor <keyword>`
+
+Look for items matching that keyword posted by a vendor.
+
+#### `/artisan <keyword>`
+
+Look for items matching that keyword posted by an artisan.
+
+#### `/groupbuy <keyword>`
+
+Look for items matching that keyword posted as a group buy.
+
+#### `/interestcheck <keyword>`
+
+Look for items matching that keyword posted as an interest check.
+
+#### `/giveaway <keyword>`
+
+Look for items matching that keyword posted as a giveaway.
+
+### Other
 
 #### `/help`
 
 Replies with a simple help message listing all the available commands.
 
-#### `/stop <keyword>`
-
-This tells the bot to no longer look for that keyword.
-
 #### `/items`
 
 Outputs a list of your keywords and the number of matches found so far.
-
-#### `/stats`
-
-Outputs some simple stats about the bot.
 
 ## Todo
 
 Here are some of the features I still want to add to this bot:
 
- - [ ] Vendor searches - Looking for specific vendors posts
- - [ ] Artisan searches - Looking for specific artisan posts
- - [ ] Group Buy alerts - Looking for any group buys
- - [ ] Giveaway alerts - Looking for anything matching "giveaway"
  - [ ] Multi-Region - Customize region beyond US
  - [ ] RegExp support - Be able to provide Regex instead of just strings
+ - [ ] History - Tells you how many items matched a new keyword in the past 24h

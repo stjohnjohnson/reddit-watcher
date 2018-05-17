@@ -1,7 +1,6 @@
 package data
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 
@@ -17,19 +16,6 @@ type AppData struct {
 	userMap  map[int64]Keywords
 	keywords []string
 	path     string
-}
-
-// Hits provides a map of stat name and value
-// It captures:
-//  - # of channels/users asking for reply
-//  - # of keywords it is looking for
-func (ud *AppData) Hits() map[string]string {
-	stats := make(map[string]string)
-
-	stats["subscribers"] = fmt.Sprintf("%d channels", len(ud.userMap))
-	stats["watchlist"] = fmt.Sprintf("%d items", len(ud.keyMap))
-
-	return stats
 }
 
 // Get returns the map of Keywords per user ID
@@ -61,7 +47,7 @@ func (ud *AppData) GetKeywords() []string {
 func (ud *AppData) Sync() {
 	keyMap := make(map[string][]int64)
 	for id, keys := range ud.userMap {
-		for key, _ := range keys {
+		for key := range keys {
 			keyMap[key] = append(keyMap[key], id)
 		}
 	}
@@ -69,7 +55,7 @@ func (ud *AppData) Sync() {
 
 	keywords := make([]string, len(keyMap))
 	i := 0
-	for key, _ := range keyMap {
+	for key := range keyMap {
 		keywords[i] = key
 		i++
 	}
@@ -84,6 +70,12 @@ func (ud *AppData) Add(id int64, keyword string) error {
 	return ud.Save()
 }
 
+// Exists checks if something is being watched
+func (ud *AppData) Exists(id int64, keyword string) bool {
+	_, ok := ud.Get(id)[strings.ToLower(keyword)]
+	return ok
+}
+
 // Remove no longer watches a keyword for a given user ID
 func (ud *AppData) Remove(id int64, keyword string) error {
 	delete(ud.Get(id), strings.ToLower(keyword))
@@ -94,16 +86,16 @@ func (ud *AppData) Remove(id int64, keyword string) error {
 
 // Increment bumps the hit counter on a given keyword and user ID
 func (ud *AppData) Increment(id int64, keyword string) error {
-	ud.Get(id)[strings.ToLower(keyword)] += 1
+	ud.Get(id)[strings.ToLower(keyword)]++
 
 	return ud.Save()
 }
 
 // Save persists the user data and stats to disk
 func (ud *AppData) Save() error {
-	err := persist.Save(fmt.Sprintf("%s/user-map.json", ud.path), ud.userMap)
+	err := persist.Save(fmt.Sprintf("%s.json", ud.path), ud.userMap)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Save UserMap failed: %v", err))
+		return fmt.Errorf("save data failed: %v", err)
 	}
 
 	return nil
@@ -113,7 +105,7 @@ func (ud *AppData) Save() error {
 func Load(path string) (*AppData, error) {
 	var userMap map[int64]Keywords
 
-	err := persist.Load(fmt.Sprintf("%s/user-map.json", path), &userMap)
+	err := persist.Load(fmt.Sprintf("%s.json", path), &userMap)
 	if err != nil {
 		userMap = make(map[int64]Keywords)
 	}

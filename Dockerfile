@@ -5,6 +5,8 @@ FROM golang:1.10 AS build
 WORKDIR /go/src/github.com/stjohnjohnson/reddit-watcher
 RUN go get -u github.com/golang/dep/cmd/dep
 RUN go get -u github.com/screwdriver-cd/gitversion
+RUN go get -u gopkg.in/alecthomas/gometalinter.v2 \
+    && gometalinter.v2 --install
 
 # Compilation target
 ENV GOOS=linux
@@ -15,6 +17,8 @@ ENV CGO_ENABLED=0
 COPY . /go/src/github.com/stjohnjohnson/reddit-watcher
 RUN dep ensure -vendor-only
 
+# Static Analysis
+RUN gometalinter.v2 ./... --vendor
 # Test the code
 RUN go test ./... -coverprofile coverage.out
 
@@ -29,10 +33,11 @@ RUN go build \
     "
 
 # Executable stage
-FROM alpine:3.4
+FROM alpine:3.7
 
 # Ensure we can call HTTPS endpoints
-RUN apk add --update ca-certificates && rm -rf /var/cache/apk/*
+RUN apk add --update ca-certificates \
+    && rm -rf /var/cache/apk/*
 
 # Copy binary from build step
 COPY --from=build /reddit-watcher /usr/bin/
