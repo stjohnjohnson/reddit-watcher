@@ -1,3 +1,4 @@
+artifacts/
 vendor/
 config/
-coverage.out
+*.out

@@ -8,6 +8,8 @@ jobs:
       - checkout
       - run: make install
       - run: make test
+      - store_test_results:
+          path: artifacts
       - setup_remote_docker
       - run: make build
   publish:
