@@ -15,7 +15,15 @@ test:
 	@goveralls -coverprofile=coverage.out -service=circle-ci -repotoken ${COVERALLS_TOKEN}
 
 build:
-	docker build . -t reddit-watch:latest
+	docker build . -t reddit-watcher:latest
 
 run:
-	docker run --rm -it -v `pwd`/config:/config reddit-watch:latest --token ${TOKEN}
+	docker run --rm -it -v `pwd`/config:/config reddit-watcher:latest --token ${TOKEN}
+
+bump:
+	# Ensure we have gitversion
+	go get -u github.com/screwdriver-cd/gitversion
+	# Bump version
+	gitversion bump auto
+	# Push new tags
+	git push origin --tags

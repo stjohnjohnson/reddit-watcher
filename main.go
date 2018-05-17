@@ -7,11 +7,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/stjohnjohnson/reddit-watch/chatter"
-	"github.com/stjohnjohnson/reddit-watch/data"
-	"github.com/stjohnjohnson/reddit-watch/matcher"
-	"github.com/stjohnjohnson/reddit-watch/scanner"
-	"github.com/stjohnjohnson/reddit-watch/stats"
+	"github.com/stjohnjohnson/reddit-watcher/chatter"
+	"github.com/stjohnjohnson/reddit-watcher/data"
+	"github.com/stjohnjohnson/reddit-watcher/matcher"
+	"github.com/stjohnjohnson/reddit-watcher/scanner"
+	"github.com/stjohnjohnson/reddit-watcher/stats"
 )
 
 // These variables get set by the build script via the LDFLAGS
@@ -89,7 +89,7 @@ func (b *BotHandler) parseIncomingMessage(userID int64, message string) string {
 
 	case len(fields) > 1 && fields[1] == "help":
 		resp := []string{
-			fmt.Sprintf("reddit-watcher@%v, commit %v, built at %v", version, commit, date),
+			fmt.Sprintf("reddit-watcherer@%v, commit %v, built at %v", version, commit, date),
 			"https://git.io/vprdx",
 			"How to use this bot:",
 			" /buying <keyword> - will notify this channel if any listings match that keyword",

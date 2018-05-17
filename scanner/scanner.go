@@ -37,7 +37,7 @@ func (r *ScannerHandler) Start() (chan *reddit.Post, error) {
 // New creates a new scanner to look for Reddit posts in /r/mechmarket
 func New(version string) (*ScannerHandler, error) {
 	script, err := reddit.NewScript(
-		fmt.Sprintf("golang:reddit-watch:%v (by /u/GalacticGargleBlaster)", version),
+		fmt.Sprintf("golang:reddit-watcher:%v (by /u/GalacticGargleBlaster)", version),
 		time.Second*5,
 	)
 	if err != nil {
