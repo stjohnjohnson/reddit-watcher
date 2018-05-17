@@ -1,0 +1,12 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.10
+    working_directory: /go/src/github.com/stjohnjohnson/reddit-watch
+    steps:
+      - checkout
+      - run: make install
+      - run: make test
+      - setup_remote_docker
+      - run: make build
