@@ -15,6 +15,7 @@ var (
 )
 
 func main() {
+	log.SetPrefix("[MAIN] ")
 	log.Printf("Version %v, commit %v, built at %v", version, commit, date)
 
 	token := flag.String("token", "INVALID", "Bot Token for Telegram")

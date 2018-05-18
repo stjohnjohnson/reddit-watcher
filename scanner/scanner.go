@@ -2,6 +2,8 @@ package scanner
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"github.com/turnage/graw"
@@ -13,6 +15,7 @@ type Handler struct {
 	script  reddit.Script
 	config  graw.Config
 	channel Channel
+	logger  *log.Logger
 }
 
 // Channel is a reddit post channel
@@ -20,6 +23,7 @@ type Channel chan *reddit.Post
 
 // Post receives an update from Reddit and forwards it to the Channel
 func (r *Handler) Post(p *reddit.Post) error {
+	r.logger.Printf("Received post: %v", p.URL)
 	r.channel <- p
 
 	return nil
@@ -27,11 +31,18 @@ func (r *Handler) Post(p *reddit.Post) error {
 
 // Start will start the scanner and return a channel to listen for new posts
 func (r *Handler) Start() (chan *reddit.Post, error) {
-	_, _, err := graw.Scan(r, r.script, r.config)
+	_, wait, err := graw.Scan(r, r.script, r.config)
 
 	if err != nil {
+		r.logger.Printf("Scanner failed to start: %v", err)
 		return nil, fmt.Errorf("Unable to start: %v", err)
 	}
+	r.logger.Print("Scanner started")
+
+	// @TODO Add retries instead of exiting the app
+	go func() {
+		r.logger.Fatalf("Scanner failed: %v", wait())
+	}()
 
 	return r.channel, err
 }
@@ -46,14 +57,17 @@ func New(version string) (*Handler, error) {
 		return nil, fmt.Errorf("Unable to setup: %v", err)
 	}
 
+	logger := log.New(os.Stderr, "[SCAN] ", log.LstdFlags)
 	channel := make(Channel)
 	config := graw.Config{
 		Subreddits: []string{"mechmarket"},
+		Logger:     logger,
 	}
 
 	return &Handler{
 		script:  script,
 		config:  config,
 		channel: channel,
+		logger:  logger,
 	}, nil
 }
