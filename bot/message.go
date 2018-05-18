@@ -2,7 +2,6 @@ package bot
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 
@@ -39,7 +38,7 @@ func (b *Handler) incomingMessage(userID int64, message string) {
 
 	err := b.chat.SendMessage(userID, resp)
 	if err != nil {
-		log.Printf("Unable to send message: %v", err)
+		b.logger.Printf("Unable to send message: %v", err)
 	}
 }
 
@@ -51,7 +50,7 @@ func (b *Handler) handleSubscribe(userID int64, cmd, keyword string) string {
 	if b.data[cmd].Exists(userID, keyword) {
 		err := b.data[cmd].Remove(userID, keyword)
 		if err != nil {
-			log.Println("Unable to remove keyword: ", err)
+			b.logger.Println("Unable to remove keyword: ", err)
 		}
 
 		return fmt.Sprintf("I'm no longer watching for %s posts that match %s", cmd, keyword)
@@ -59,7 +58,7 @@ func (b *Handler) handleSubscribe(userID int64, cmd, keyword string) string {
 
 	err := b.data[cmd].Add(userID, keyword)
 	if err != nil {
-		log.Println("Unable to add keyword: ", err)
+		b.logger.Println("Unable to add keyword: ", err)
 	}
 
 	// @TODO better message for ALL events

@@ -3,6 +3,7 @@ package bot
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/stjohnjohnson/reddit-watcher/chatter"
 	"github.com/stjohnjohnson/reddit-watcher/data"
@@ -20,6 +21,7 @@ type Handler struct {
 	scan     *scanner.Handler
 	messages chatter.Channel
 	chat     *chatter.Handler
+	logger   *log.Logger
 }
 
 // Loop is the main logic loop, listening for posts or messages from user
@@ -27,7 +29,7 @@ func (b *Handler) Loop() {
 	for {
 		select {
 		case post := <-b.posts:
-			log.Printf("POST: %s", post.Title)
+			b.logger.Printf("POST: %s", post.Title)
 			b.incomingPost(post)
 
 		case update := <-b.messages:
@@ -35,7 +37,7 @@ func (b *Handler) Loop() {
 			if update.Message == nil {
 				continue
 			}
-			log.Printf("MSG: %s: %s", update.Message.Chat.UserName, update.Message.Text)
+			b.logger.Printf("MSG: %s: %s", update.Message.Chat.UserName, update.Message.Text)
 			b.incomingMessage(update.Message.Chat.ID, update.Message.Text)
 		}
 	}
@@ -44,17 +46,19 @@ func (b *Handler) Loop() {
 // New creates a new bot given a Telegram token and config directory
 func New(token, configDir, version string) (*Handler, error) {
 	appData := make(map[string]*data.AppData)
+	logger := log.New(os.Stderr, "[BOT]  ", log.LstdFlags)
+
 	for _, t := range matcher.Types {
 		d, err := data.Load(fmt.Sprintf("%s/%s", configDir, t))
 		if err != nil {
-			log.Printf("Unable to load config: %v", err)
+			logger.Printf("Unable to load config: %v", err)
 		}
 		appData[t] = d
 	}
 
 	statData, err := stats.Load(configDir)
 	if err != nil {
-		log.Printf("Unable to load stats: %v", err)
+		logger.Printf("Unable to load stats: %v", err)
 	}
 
 	scan, err := scanner.New(version)
@@ -85,5 +89,6 @@ func New(token, configDir, version string) (*Handler, error) {
 		scan:     scan,
 		messages: messages,
 		chat:     chat,
+		logger:   logger,
 	}, nil
 }

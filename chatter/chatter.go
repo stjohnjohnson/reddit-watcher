@@ -3,13 +3,15 @@ package chatter
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"gopkg.in/telegram-bot-api.v4"
 )
 
 // Handler is a telegram bot
 type Handler struct {
-	bot *tgbotapi.BotAPI
+	bot    *tgbotapi.BotAPI
+	logger *log.Logger
 }
 
 // Channel is a message channel
@@ -40,14 +42,16 @@ func (r *Handler) SendMessage(chatID int64, message string) error {
 
 // New creates a new Telegram bot
 func New(version, token string) (*Handler, error) {
+	logger := log.New(os.Stderr, "[CHAT] ", log.LstdFlags)
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		return nil, fmt.Errorf("Unable to setup: %v", err)
 	}
 
-	log.Printf("Authorized on account %s", bot.Self.UserName)
+	logger.Printf("Authorized on account %s", bot.Self.UserName)
 
 	return &Handler{
-		bot: bot,
+		bot:    bot,
+		logger: logger,
 	}, nil
 }

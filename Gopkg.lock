@@ -4,8 +4,8 @@
 [[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "00c29f56e2386353d58c599509e8dc3801b0d716"
+  revision = "bb74f1db0675b241733089d5a1faa5dd8b0ef57b"
 
 [[projects]]
   name = "github.com/technoweenie/multipartstreamer"
@@ -36,7 +36,7 @@
     "streams/internal/monitor",
     "streams/internal/rsort"
   ]
-  revision = "a036563d1a15fbf88a09ab3c9f4e697bb439e02d"
+  revision = "15877a6c18d60f0ad1336c3d44fb59e95c3e6b40"
 
 [[projects]]
   name = "github.com/turnage/redditproto"
@@ -51,7 +51,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
+  revision = "2491c5de3490fced2f6cff376127c667efeed857"
 
 [[projects]]
   branch = "master"
@@ -60,7 +60,7 @@
     ".",
     "internal"
   ]
-  revision = "6881fee410a5daf86371371f9ad451b95e168b71"
+  revision = "cdc340f7c179dbbfa4afd43b7614e8fcadde4269"
 
 [[projects]]
   name = "google.golang.org/appengine"
