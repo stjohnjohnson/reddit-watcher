@@ -2,16 +2,16 @@ package bot
 
 import (
 	"fmt"
+	"html"
 
 	"github.com/stjohnjohnson/reddit-watcher/matcher"
 	"github.com/turnage/graw/reddit"
 )
 
-func (b *Handler) incomingPost(post *reddit.Post) {
+func (b *Handler) incomingPost(post *reddit.Post) error {
 	item, err := matcher.ParseTitle(post.Title)
 	if err != nil {
-		b.logger.Printf("Unable to parse title: %s", err)
-		return
+		return fmt.Errorf("unable to parse title: %s", err)
 	}
 	b.logger.Printf("PARSE: type: %s region: %s", item.Type, item.Region)
 
@@ -19,14 +19,12 @@ func (b *Handler) incomingPost(post *reddit.Post) {
 	// @TODO Record stats for region
 	err = b.stats.Increment(item.Type)
 	if err != nil {
-		b.logger.Printf("Unable to record stat: %s", err)
-		return
+		return fmt.Errorf("unable to record stat: %s", err)
 	}
 
 	d, ok := b.data[item.Type]
 	if !ok {
-		b.logger.Printf("Unknown type: %s", item.Type)
-		return
+		return fmt.Errorf("unknown type: %s", item.Type)
 	}
 
 	keywords := matcher.FindMatching(d.GetKeywords(), item.Contents, post.SelfText)
@@ -39,7 +37,8 @@ func (b *Handler) incomingPost(post *reddit.Post) {
 			}
 			b.logger.Printf("MATCH: %s/%s for @%d, %s", item.Type, keyword, id, post.URL)
 
-			err = b.chat.SendMessage(id, fmt.Sprintf("%s (matching %s %s)", post.URL, item.Type, keyword))
+			err = b.chat.SendMessage(id, fmt.Sprintf(`%s [<a href="%s">web</a>] [<a href="https://hidereferrer.com/?narwhal://open-url/www.reddit.com%s">app</a>] <i>(matched %s %s)</i>`,
+				html.EscapeString(post.Title), post.URL, post.Permalink, item.Type, html.EscapeString(keyword)))
 			if err != nil {
 				b.logger.Printf("Unable to send message: %s", err)
 			}
@@ -50,4 +49,6 @@ func (b *Handler) incomingPost(post *reddit.Post) {
 			}
 		}
 	}
+
+	return nil
 }

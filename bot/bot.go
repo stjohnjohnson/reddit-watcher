@@ -15,12 +15,12 @@ import (
 // Handler is the bot object
 type Handler struct {
 	version  string
-	data     map[string]*data.AppData
-	stats    *stats.Handler
+	data     map[string]data.Interface
+	stats    stats.Interface
 	posts    scanner.Channel
 	scan     *scanner.Handler
 	messages chatter.Channel
-	chat     *chatter.Handler
+	chat     chatter.Interface
 	logger   *log.Logger
 }
 
@@ -30,7 +30,10 @@ func (b *Handler) Loop() {
 		select {
 		case post := <-b.posts:
 			b.logger.Printf("POST: %s", post.Title)
-			b.incomingPost(post)
+			err := b.incomingPost(post)
+			if err != nil {
+				b.logger.Printf("post failure: %v", err)
+			}
 
 		case update := <-b.messages:
 			// Skip non-messages
@@ -38,14 +41,17 @@ func (b *Handler) Loop() {
 				continue
 			}
 			b.logger.Printf("MSG: %s: %s", update.Message.Chat.UserName, update.Message.Text)
-			b.incomingMessage(update.Message.Chat.ID, update.Message.Text)
+			err := b.incomingMessage(update.Message.Chat.ID, update.Message.Text)
+			if err != nil {
+				b.logger.Printf("message failure: %v", err)
+			}
 		}
 	}
 }
 
 // New creates a new bot given a Telegram token and config directory
 func New(token, configDir, version string) (*Handler, error) {
-	appData := make(map[string]*data.AppData)
+	appData := make(map[string]data.Interface)
 	logger := log.New(os.Stderr, "[BOT]  ", log.LstdFlags)
 
 	for _, t := range matcher.Types {

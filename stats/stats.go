@@ -14,6 +14,12 @@ type Handler struct {
 	data      map[string]int64
 }
 
+// Interface is the stats public functions
+type Interface interface {
+	GetAll() map[string]string
+	Increment(string) error
+}
+
 // GetAll provides a map of stat name and value
 // It additionally returns current uptime
 func (ud *Handler) GetAll() map[string]string {
@@ -37,19 +43,19 @@ func (ud *Handler) Increment(flag string) error {
 
 	ud.data[flag]++
 
-	err := ud.Save()
+	err := ud.save()
 	if err != nil {
-		return fmt.Errorf("Save failed: %v", err)
+		return fmt.Errorf("save failed: %v", err)
 	}
 
 	return nil
 }
 
-// Save persists the user data and stats to disk
-func (ud *Handler) Save() error {
+// save persists the user data and stats to disk
+func (ud *Handler) save() error {
 	err := persist.Save(fmt.Sprintf("%s/stats.json", ud.path), ud.data)
 	if err != nil {
-		return fmt.Errorf("Save Stats failed: %v", err)
+		return fmt.Errorf("save stats failed: %v", err)
 	}
 
 	return nil
