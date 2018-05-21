@@ -1,6 +1,7 @@
 # Reddit Watcher
 
-[![CircleCI](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master.svg?style=svg)](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master) [![Coverage Status](https://coveralls.io/repos/github/stjohnjohnson/reddit-watcher/badge.svg?branch=master)](https://coveralls.io/github/stjohnjohnson/reddit-watcher?branch=master)
+[![Current Release](https://img.shields.io/github/tag/stjohnjohnson/reddit-watcher.svg)](https://img.shields.io/github/tag/stjohnjohnson/reddit-watcher.svg)  [![CircleCI](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master.svg?style=shield)](https://circleci.com/gh/stjohnjohnson/reddit-watcher/tree/master) [![Coverage Status](https://coveralls.io/repos/github/stjohnjohnson/reddit-watcher/badge.svg?branch=master)](https://coveralls.io/github/stjohnjohnson/reddit-watcher?branch=master) [![Go Report Card](https://goreportcard.com/badge/github.com/stjohnjohnson/reddit-watcher)](https://goreportcard.com/report/github.com/stjohnjohnson/reddit-watcher) 
+[![Docker Pulls](https://img.shields.io/docker/pulls/stjohnjohnson/reddit-watcher.svg)](https://hub.docker.com/r/stjohnjohnson/reddit-watcher/)
 
 Watches specific subreddits (`/r/mechmarket`) for items matching a specific pattern.
 
