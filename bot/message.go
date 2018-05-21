@@ -2,19 +2,38 @@ package bot
 
 import (
 	"fmt"
+	"html"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/stjohnjohnson/reddit-watcher/matcher"
 )
 
+var helpText = strings.Join([]string{
+	"",
+	"",
+	"You can subscribe or unsubscribe to events by using the following commands:",
+	" /buying <keyword> - something being bought",
+	" /selling <keyword> - something being sold",
+	" /vendor <keyword> - updates from vendors",
+	" /artisan <keyword> - updates from artisans",
+	" /groupbuy <keyword> - updates about group buys",
+	" /interestcheck <keyword> - feedback about a design",
+	" /giveaway <keyword> - something being given away",
+	"",
+	"Other options:",
+	" /items - returns list of watched items",
+	" /help - gets this help message",
+}, "\n")
+
 // /COMMAND OPTIONALDATA
 var cmdRex = regexp.MustCompile(`(?i)^/(\w+)(?:\s(.+))?$`)
 
-func (b *Handler) incomingMessage(userID int64, message string) {
+func (b *Handler) incomingMessage(userID int64, message string) error {
 	fields := cmdRex.FindStringSubmatch(message)
 	if fields == nil {
-		return
+		return nil
 	}
 
 	var resp string
@@ -38,8 +57,10 @@ func (b *Handler) incomingMessage(userID int64, message string) {
 
 	err := b.chat.SendMessage(userID, resp)
 	if err != nil {
-		b.logger.Printf("Unable to send message: %v", err)
+		return fmt.Errorf("Unable to send message: %v", err)
 	}
+
+	return nil
 }
 
 func (b *Handler) handleSubscribe(userID int64, cmd, keyword string) string {
@@ -53,7 +74,7 @@ func (b *Handler) handleSubscribe(userID int64, cmd, keyword string) string {
 			b.logger.Println("Unable to remove keyword: ", err)
 		}
 
-		return fmt.Sprintf("I'm no longer watching for %s posts that match %s", cmd, keyword)
+		return fmt.Sprintf("I'm no longer watching for <b>%s</b> posts that match <b>%s</b>", html.EscapeString(cmd), html.EscapeString(keyword))
 	}
 
 	err := b.data[cmd].Add(userID, keyword)
@@ -62,7 +83,7 @@ func (b *Handler) handleSubscribe(userID int64, cmd, keyword string) string {
 	}
 
 	// @TODO better message for ALL events
-	return fmt.Sprintf("Okay, I'm going to watch for %s posts that match %s", cmd, keyword)
+	return fmt.Sprintf("Okay, I'm going to watch for <b>%s</b> posts that match <b>%s</b>", html.EscapeString(cmd), html.EscapeString(keyword))
 }
 
 func (b *Handler) handleWatchlist(userID int64) string {
@@ -74,9 +95,15 @@ func (b *Handler) handleWatchlist(userID int64) string {
 			continue
 		}
 
+		keys := make([]string, 0)
+		for k := range crit {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
 		resp = append(resp, fmt.Sprintf("%s:", strings.ToUpper(t)))
-		for keyword, hits := range crit {
-			resp = append(resp, fmt.Sprintf(" - %v (%d hits)", keyword, hits))
+		for _, keyword := range keys {
+			resp = append(resp, fmt.Sprintf(" - %v <i>(%d hits)</i>", html.EscapeString(keyword), crit[keyword]))
 		}
 		resp = append(resp, "")
 	}
@@ -88,24 +115,7 @@ func (b *Handler) handleWatchlist(userID int64) string {
 }
 
 func (b *Handler) handleHelp() string {
-	resp := []string{
-		fmt.Sprintf("Hi, I'm reddit-watcher@%v. I watch /r/mechmarket for specific keywords", b.version),
-		"",
-		"You can subscribe or unsubscribe to events by using the following commands:",
-		" /buying <keyword> - something being bought",
-		" /selling <keyword> - something being sold",
-		" /vendor <keyword> - updates from vendors",
-		" /artisan <keyword> - updates from artisans",
-		" /groupbuy <keyword> - updates about group buys",
-		" /interestcheck <keyword> - feedback about a design",
-		" /giveaway <keyword> - something being given away",
-		"",
-		"Other options:",
-		" /items - returns list of watched items",
-		" /help - gets this help message",
-	}
-
-	return strings.Join(resp, "\n")
+	return fmt.Sprintf(`Hi, I'm <a href="https://github.com/stjohnjohnson/reddit-watcher">reddit-watcher@%v</a>. I watch /r/mechmarket for specific keywords%s`, b.version, html.EscapeString(helpText))
 }
 
 func (b *Handler) handleStats() string {
@@ -114,7 +124,7 @@ func (b *Handler) handleStats() string {
 	}
 
 	for stat, val := range b.stats.GetAll() {
-		resp = append(resp, fmt.Sprintf(" - %v (%v)", stat, val))
+		resp = append(resp, fmt.Sprintf(" - %v <i>(%v)</i>", stat, val))
 	}
 
 	return strings.Join(resp, "\n")

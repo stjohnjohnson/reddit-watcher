@@ -14,6 +14,12 @@ type Handler struct {
 	logger *log.Logger
 }
 
+// Interface is the stats public functions
+type Interface interface {
+	Start() (Channel, error)
+	SendMessage(int64, string) error
+}
+
 // Channel is a message channel
 type Channel tgbotapi.UpdatesChannel
 
@@ -32,7 +38,9 @@ func (r *Handler) Start() (Channel, error) {
 
 // SendMessage will send a message to a given user
 func (r *Handler) SendMessage(chatID int64, message string) error {
-	_, err := r.bot.Send(tgbotapi.NewMessage(chatID, message))
+	msg := tgbotapi.NewMessage(chatID, message)
+	msg.ParseMode = tgbotapi.ModeHTML
+	_, err := r.bot.Send(msg)
 
 	if err != nil {
 		return fmt.Errorf("Unable to send: %v", err)
