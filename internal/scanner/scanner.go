@@ -18,6 +18,12 @@ type Handler struct {
 	logger  *log.Logger
 }
 
+// Interface is the stats public functions
+type Interface interface {
+	Post(*reddit.Post) error
+	Start() (chan *reddit.Post, error)
+}
+
 // Channel is a reddit post channel
 type Channel chan *reddit.Post
 

@@ -18,7 +18,7 @@ type Handler struct {
 	data     map[string]data.Interface
 	stats    stats.Interface
 	posts    scanner.Channel
-	scan     *scanner.Handler
+	scan     scanner.Interface
 	messages chatter.Channel
 	chat     chatter.Interface
 	logger   *log.Logger
@@ -62,11 +62,6 @@ func New(token, configDir, version string) (*Handler, error) {
 		appData[t] = d
 	}
 
-	statData, err := stats.Load(configDir)
-	if err != nil {
-		logger.Printf("Unable to load stats: %v", err)
-	}
-
 	scan, err := scanner.New(version)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to setup scanner: %v", err)
@@ -90,7 +85,7 @@ func New(token, configDir, version string) (*Handler, error) {
 	return &Handler{
 		version:  version,
 		data:     appData,
-		stats:    statData,
+		stats:    stats.New(),
 		posts:    posts,
 		scan:     scan,
 		messages: messages,

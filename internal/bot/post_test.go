@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -21,26 +20,6 @@ func TestBadPost(t *testing.T) {
 
 	expected := fmt.Errorf("unable to parse title: not parsable: ")
 	err := obj.incomingPost(&reddit.Post{})
-
-	if !reflect.DeepEqual(err, expected) {
-		t.Errorf("Expected %q, got %q", expected, err)
-	}
-}
-
-func TestBadIncrement(t *testing.T) {
-	obj := &Handler{
-		logger: log.New(ioutil.Discard, "", 0),
-		stats: &mocks.Stats{
-			MockIncrement: func() error {
-				return errors.New("failed to increment")
-			},
-		},
-	}
-
-	expected := fmt.Errorf("unable to record stat: failed to increment")
-	err := obj.incomingPost(&reddit.Post{
-		Title: "[US-CA] [H] Money [W] Tada68",
-	})
 
 	if !reflect.DeepEqual(err, expected) {
 		t.Errorf("Expected %q, got %q", expected, err)
