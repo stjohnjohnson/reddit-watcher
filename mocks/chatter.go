@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/stjohnjohnson/reddit-watcher/chatter"
+import "github.com/stjohnjohnson/reddit-watcher/internal/chatter"
 
 // Chatter is mocked
 type Chatter struct {

@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/stjohnjohnson/reddit-watcher/data"
+import "github.com/stjohnjohnson/reddit-watcher/internal/data"
 
 // Data is mocked
 type Data struct {

@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 
-	"github.com/stjohnjohnson/reddit-watcher/chatter"
-	"github.com/stjohnjohnson/reddit-watcher/data"
-	"github.com/stjohnjohnson/reddit-watcher/matcher"
-	"github.com/stjohnjohnson/reddit-watcher/scanner"
-	"github.com/stjohnjohnson/reddit-watcher/stats"
+	"github.com/stjohnjohnson/reddit-watcher/internal/chatter"
+	"github.com/stjohnjohnson/reddit-watcher/internal/data"
+	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
+	"github.com/stjohnjohnson/reddit-watcher/internal/scanner"
+	"github.com/stjohnjohnson/reddit-watcher/internal/stats"
 )
 
 // Handler is the bot object

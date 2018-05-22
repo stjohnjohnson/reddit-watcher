@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/stjohnjohnson/reddit-watcher/bot"
+	"github.com/stjohnjohnson/reddit-watcher/internal/bot"
 )
 
 // These variables get set by the build script via the LDFLAGS

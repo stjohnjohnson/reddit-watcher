@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/stjohnjohnson/reddit-watcher/matcher"
+	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
 )
 
 var helpText = strings.Join([]string{

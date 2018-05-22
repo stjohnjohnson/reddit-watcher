@@ -8,8 +8,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stjohnjohnson/reddit-watcher/data"
-	"github.com/stjohnjohnson/reddit-watcher/matcher"
+	"github.com/stjohnjohnson/reddit-watcher/internal/data"
+	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
 	"github.com/stjohnjohnson/reddit-watcher/mocks"
 	"github.com/turnage/graw/reddit"
 )

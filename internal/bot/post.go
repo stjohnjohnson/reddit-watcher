@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html"
 
-	"github.com/stjohnjohnson/reddit-watcher/matcher"
+	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
 	"github.com/turnage/graw/reddit"
 )
 
