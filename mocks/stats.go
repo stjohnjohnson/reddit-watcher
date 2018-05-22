@@ -3,7 +3,7 @@ package mocks
 // Stats is mocked
 type Stats struct {
 	MockGetAll    func() map[string]string
-	MockIncrement func() error
+	MockIncrement func()
 }
 
 // GetAll is mocked
@@ -15,9 +15,8 @@ func (s *Stats) GetAll() map[string]string {
 }
 
 // Increment is mocked
-func (s *Stats) Increment(string) error {
+func (s *Stats) Increment(string) {
 	if s.MockIncrement != nil {
-		return s.MockIncrement()
+		s.MockIncrement()
 	}
-	return nil
 }

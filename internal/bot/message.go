@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/stjohnjohnson/reddit-watcher/matcher"
+	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
 )
 
 var helpText = strings.Join([]string{
@@ -101,7 +101,7 @@ func (b *Handler) handleWatchlist(userID int64) string {
 		}
 		sort.Strings(keys)
 
-		resp = append(resp, fmt.Sprintf("%s:", strings.ToUpper(t)))
+		resp = append(resp, fmt.Sprintf("<b>%s:</b>", strings.ToUpper(t)))
 		for _, keyword := range keys {
 			resp = append(resp, fmt.Sprintf(" - %v <i>(%d hits)</i>", html.EscapeString(keyword), crit[keyword]))
 		}
@@ -120,11 +120,18 @@ func (b *Handler) handleHelp() string {
 
 func (b *Handler) handleStats() string {
 	resp := []string{
-		"Interesting Statistics:",
+		"<b>Interesting Statistics:</b>",
 	}
 
-	for stat, val := range b.stats.GetAll() {
-		resp = append(resp, fmt.Sprintf(" - %v <i>(%v)</i>", stat, val))
+	stats := b.stats.GetAll()
+	keys := make([]string, 0)
+	for k := range stats {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, field := range keys {
+		resp = append(resp, fmt.Sprintf(" - %v <i>(%s)</i>", html.EscapeString(field), stats[field]))
 	}
 
 	return strings.Join(resp, "\n")

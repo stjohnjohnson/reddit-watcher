@@ -1,15 +1,14 @@
 package bot
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"reflect"
 	"testing"
 
-	"github.com/stjohnjohnson/reddit-watcher/data"
-	"github.com/stjohnjohnson/reddit-watcher/matcher"
+	"github.com/stjohnjohnson/reddit-watcher/internal/data"
+	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
 	"github.com/stjohnjohnson/reddit-watcher/mocks"
 	"github.com/turnage/graw/reddit"
 )
@@ -21,26 +20,6 @@ func TestBadPost(t *testing.T) {
 
 	expected := fmt.Errorf("unable to parse title: not parsable: ")
 	err := obj.incomingPost(&reddit.Post{})
-
-	if !reflect.DeepEqual(err, expected) {
-		t.Errorf("Expected %q, got %q", expected, err)
-	}
-}
-
-func TestBadIncrement(t *testing.T) {
-	obj := &Handler{
-		logger: log.New(ioutil.Discard, "", 0),
-		stats: &mocks.Stats{
-			MockIncrement: func() error {
-				return errors.New("failed to increment")
-			},
-		},
-	}
-
-	expected := fmt.Errorf("unable to record stat: failed to increment")
-	err := obj.incomingPost(&reddit.Post{
-		Title: "[US-CA] [H] Money [W] Tada68",
-	})
 
 	if !reflect.DeepEqual(err, expected) {
 		t.Errorf("Expected %q, got %q", expected, err)

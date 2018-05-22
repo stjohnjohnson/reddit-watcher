@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"html"
 
-	"github.com/stjohnjohnson/reddit-watcher/matcher"
+	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
 	"github.com/turnage/graw/reddit"
 )
 
@@ -17,10 +17,7 @@ func (b *Handler) incomingPost(post *reddit.Post) error {
 
 	// Record stats for type
 	// @TODO Record stats for region
-	err = b.stats.Increment(item.Type)
-	if err != nil {
-		return fmt.Errorf("unable to record stat: %s", err)
-	}
+	b.stats.Increment(item.Type)
 
 	d, ok := b.data[item.Type]
 	if !ok {

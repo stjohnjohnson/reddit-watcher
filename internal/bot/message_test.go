@@ -94,7 +94,7 @@ func TestMessageStats(t *testing.T) {
 	if !reflect.DeepEqual(err, nil) {
 		t.Errorf("Expected nil, got %q", err)
 	}
-	expected := "1/Interesting Statistics:\n - foo <i>(bar)</i>"
+	expected := "1/<b>Interesting Statistics:</b>\n - foo <i>(bar)</i>"
 	if !strings.HasPrefix(actual, expected) {
 		t.Errorf("Expected %q to start with %q", actual, expected)
 	}
