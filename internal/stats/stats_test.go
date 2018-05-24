@@ -27,7 +27,7 @@ func TestLongDate(t *testing.T) {
 	}
 
 	data := obj.GetAll()
-	if ok, _ := regexp.MatchString(`\d+d \d+h \d+m`, data["last post"]); !ok {
+	if ok, _ := regexp.MatchString(`\d+d \d{1,2}h \d{1,2}m`, data["last post"]); !ok {
 		t.Errorf("Expected long last post, got %+v", data["last post"])
 	}
 }
@@ -44,11 +44,11 @@ func TestReadWrite(t *testing.T) {
 		t.Errorf("Expected 4 item, got %+v", data)
 	}
 
-	if data["foo"] != "1 hits" {
+	if data["foo"] != "1 posts" {
 		t.Errorf("Expected foo=1, got %v", data["foo"])
 	}
 
-	if data["bar"] != "2 hits" {
+	if data["bar"] != "2 posts" {
 		t.Errorf("Expected bar=2, got %v", data["bar"])
 	}
 }
