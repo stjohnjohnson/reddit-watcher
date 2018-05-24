@@ -26,7 +26,7 @@ func prettyPrint(t time.Time) string {
 	}
 	d := time.Since(t)
 
-	mins := math.Trunc(d.Minutes())
+	mins := math.Trunc(math.Mod(d.Minutes(), 60))
 	days := math.Trunc(d.Hours() / 24)
 	hours := math.Trunc(math.Mod(d.Hours(), 24))
 
@@ -56,7 +56,7 @@ func (ud *Handler) GetAll() map[string]string {
 	data["last post"] = prettyPrint(ud.lastTime)
 
 	for keyword, hits := range ud.data {
-		data[keyword] = fmt.Sprintf("%d hits", hits)
+		data[keyword] = fmt.Sprintf("%d posts", hits)
 	}
 
 	return data
