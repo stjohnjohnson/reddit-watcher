@@ -40,6 +40,7 @@ func (r *Handler) Start() (Channel, error) {
 func (r *Handler) SendMessage(chatID int64, message string) error {
 	msg := tgbotapi.NewMessage(chatID, message)
 	msg.ParseMode = tgbotapi.ModeHTML
+	msg.DisableWebPagePreview = true
 	_, err := r.bot.Send(msg)
 
 	if err != nil {
