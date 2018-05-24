@@ -10,22 +10,34 @@ import (
 	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
 )
 
-var helpText = strings.Join([]string{
-	"",
-	"",
-	"You can subscribe or unsubscribe to events by using the following commands:",
-	" /buying <keyword> - something being bought",
-	" /selling <keyword> - something being sold",
-	" /vendor <keyword> - updates from vendors",
-	" /artisan <keyword> - updates from artisans",
-	" /groupbuy <keyword> - updates about group buys",
-	" /interestcheck <keyword> - feedback about a design",
-	" /giveaway <keyword> - something being given away",
-	"",
-	"Other options:",
-	" /items - returns list of watched items",
-	" /help - gets this help message",
-}, "\n")
+var helpText = `
+
+You can subscribe or unsubscribe to events by using the following commands:
+ /buying <keyword> - something being bought
+ /selling <keyword> - something being sold
+ /vendor <keyword> - updates from vendors
+ /artisan <keyword> - updates from artisans
+ /groupbuy <keyword> - updates about group buys
+ /interestcheck <keyword> - feedback about a design
+ /giveaway <keyword> - something being given away
+
+Other options:
+ /items - returns list of watched items
+ /stats - returns stats about the current bot
+ /help - gets this help message
+`
+var startText = `
+
+Let's say you are looking for a new Tada68, well you can ask me to look for people selling one by saying:
+ /selling tada68
+
+If you want to be notified about the next Fugu sale, just tell me:
+ /artisan fugu
+
+What if you want to be notified about ALL artisan posts, send me this:
+ /artisan
+
+Unsubscribe at anytime by sending the same message (e.g. /selling tada68). Learn more with /help`
 
 // /COMMAND OPTIONALDATA
 var cmdRex = regexp.MustCompile(`(?i)^/(\w+)(?:\s(.+))?$`)
@@ -47,6 +59,9 @@ func (b *Handler) incomingMessage(userID int64, message string) error {
 
 	case "stats":
 		resp = b.handleStats()
+
+	case "start":
+		resp = b.handleStart()
 
 	case "help":
 		resp = b.handleHelp()
@@ -116,6 +131,10 @@ func (b *Handler) handleWatchlist(userID int64) string {
 
 func (b *Handler) handleHelp() string {
 	return fmt.Sprintf(`Hi, I'm <a href="https://github.com/stjohnjohnson/reddit-watcher">reddit-watcher@%v</a>. I watch /r/mechmarket for specific keywords%s`, b.version, html.EscapeString(helpText))
+}
+
+func (b *Handler) handleStart() string {
+	return fmt.Sprintf(`Hi, I'm <a href="https://github.com/stjohnjohnson/reddit-watcher">reddit-watcher@%v</a>. I watch /r/mechmarket for specific keywords%s`, b.version, html.EscapeString(startText))
 }
 
 func (b *Handler) handleStats() string {
