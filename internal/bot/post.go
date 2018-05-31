@@ -34,7 +34,7 @@ func (b *Handler) incomingPost(post *reddit.Post) error {
 			}
 			b.logger.Printf("MATCH: %s/%s for @%d, %s", item.Type, keyword, id, post.URL)
 
-			err = b.chat.SendMessage(id, fmt.Sprintf(`%s [<a href="%s">web</a>] [<a href="https://hidereferrer.com/?narwhal://open-url/www.reddit.com%s">app</a>] <i>(matched %s %s)</i>`,
+			err = b.chat.SendMessage(id, fmt.Sprintf(`%s [<a href="%s">web</a>] [<a href="https://git.io/vhZZN#%s">app</a>] <i>(matched %s %s)</i>`,
 				html.EscapeString(post.Title), post.URL, post.Permalink, item.Type, html.EscapeString(keyword)))
 			if err != nil {
 				b.logger.Printf("Unable to send message: %s", err)
