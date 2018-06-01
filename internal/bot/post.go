@@ -3,10 +3,13 @@ package bot
 import (
 	"fmt"
 	"html"
+	"regexp"
 
 	"github.com/stjohnjohnson/reddit-watcher/internal/matcher"
 	"github.com/turnage/graw/reddit"
 )
+
+var messageTemplate = `%s [<a href="%s">web</a>] [<a href="https://git.io/vhZZN#%s">app</a>] <i>(matched %s %s)</i>`
 
 func (b *Handler) incomingPost(post *reddit.Post) error {
 	item, err := matcher.ParseTitle(post.Title)
@@ -26,6 +29,11 @@ func (b *Handler) incomingPost(post *reddit.Post) error {
 
 	keywords := matcher.FindMatching(d.GetKeywords(), item.Contents, post.SelfText)
 	for _, keyword := range keywords {
+		escapedKeyword := html.EscapeString(keyword)
+		keywordReplacer := regexp.MustCompile("(?i)(" + regexp.QuoteMeta(escapedKeyword) + ")")
+		escapedTitle := keywordReplacer.ReplaceAllString(html.EscapeString(post.Title), "<b>$1</b>")
+		message := fmt.Sprintf(messageTemplate, escapedTitle, post.URL, post.Permalink, item.Type, escapedKeyword)
+
 		ids := d.GetByKeyword(keyword)
 		for _, id := range ids {
 			// @TODO Check region value
@@ -34,8 +42,7 @@ func (b *Handler) incomingPost(post *reddit.Post) error {
 			}
 			b.logger.Printf("MATCH: %s/%s for @%d, %s", item.Type, keyword, id, post.URL)
 
-			err = b.chat.SendMessage(id, fmt.Sprintf(`%s [<a href="%s">web</a>] [<a href="https://git.io/vhZZN#%s">app</a>] <i>(matched %s %s)</i>`,
-				html.EscapeString(post.Title), post.URL, post.Permalink, item.Type, html.EscapeString(keyword)))
+			err = b.chat.SendMessage(id, message)
 			if err != nil {
 				b.logger.Printf("Unable to send message: %s", err)
 			}
