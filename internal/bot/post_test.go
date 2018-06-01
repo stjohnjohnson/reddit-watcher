@@ -138,7 +138,7 @@ func TestBadMessage(t *testing.T) {
 	if !reflect.DeepEqual(err, nil) {
 		t.Errorf("Expected nil, got %q", err)
 	}
-	expected := "[US-CA] [H] Money [W] Tada68 [<a href=\"https://r.com/r/foobar\">web</a>] [<a href=\"https://git.io/vhZZN#/r/foo\">app</a>] <i>(matched buying tada68)</i>"
+	expected := "[US-CA] [H] Money [W] <b>Tada68</b> [<a href=\"https://r.com/r/foobar\">web</a>] [<a href=\"https://git.io/vhZZN#/r/foo\">app</a>] <i>(matched buying tada68)</i>"
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
@@ -180,7 +180,7 @@ func TestBadHitIncrement(t *testing.T) {
 	if !reflect.DeepEqual(err, nil) {
 		t.Errorf("Expected nil, got %q", err)
 	}
-	expected := "[US-CA] [H] Money [W] Tada68 [<a href=\"https://r.com/r/foobar\">web</a>] [<a href=\"https://git.io/vhZZN#/r/foo\">app</a>] <i>(matched buying tada68)</i>"
+	expected := "[US-CA] [H] Money [W] <b>Tada68</b> [<a href=\"https://r.com/r/foobar\">web</a>] [<a href=\"https://git.io/vhZZN#/r/foo\">app</a>] <i>(matched buying tada68)</i>"
 	if !reflect.DeepEqual(actual, expected) {
 		t.Errorf("Expected %q, got %q", expected, actual)
 	}
