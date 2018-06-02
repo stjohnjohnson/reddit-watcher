@@ -30,8 +30,12 @@ func (b *Handler) incomingPost(post *reddit.Post) error {
 	keywords := matcher.FindMatching(d.GetKeywords(), item.Contents, post.SelfText)
 	for _, keyword := range keywords {
 		escapedKeyword := html.EscapeString(keyword)
-		keywordReplacer := regexp.MustCompile("(?i)(" + regexp.QuoteMeta(escapedKeyword) + ")")
-		escapedTitle := keywordReplacer.ReplaceAllString(html.EscapeString(post.Title), "<b>$1</b>")
+		escapedTitle := html.EscapeString(post.Title)
+		keywordReplacer := regexp.MustCompile(`(?i)(\[[^\]]+\])`)
+		if keyword != "*" {
+			keywordReplacer = regexp.MustCompile("(?i)(" + regexp.QuoteMeta(escapedKeyword) + ")")
+		}
+		escapedTitle = keywordReplacer.ReplaceAllString(escapedTitle, "<b>$1</b>")
 		message := fmt.Sprintf(messageTemplate, escapedTitle, post.URL, post.Permalink, item.Type, escapedKeyword)
 
 		ids := d.GetByKeyword(keyword)
